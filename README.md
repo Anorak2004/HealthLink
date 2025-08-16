@@ -16,13 +16,30 @@ HealthLink是一个面向社区慢病共病管理的AI驱动云平台，构建"1
 - SQLite (默认) 或 MySQL 8.0+
 - Docker & Docker Compose (可选)
 
-### 安装步骤
+### 快速启动 (推荐)
 
 1. **克隆项目**
 ```bash
 git clone <repository-url>
 cd HealthLink
 ```
+
+2. **安装依赖**
+```bash
+pip install -r requirements.txt
+```
+
+3. **测试修复** (可选)
+```bash
+python test_fix.py
+```
+
+4. **启动服务** (自动初始化数据库和示例数据)
+```bash
+python start_server.py
+```
+
+### 传统安装步骤
 
 2. **安装依赖**
 ```bash

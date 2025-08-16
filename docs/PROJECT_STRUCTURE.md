@@ -14,7 +14,8 @@ HealthLink/
     doctor-console/
     admin-ops/
   services/
-    gateway-api/
+    gateway_api/             # API网关服务 (重命名为Python兼容)
+    gateway-api/             # 原始目录 (可删除)
     icer-engine/
     screening-service/
     intervention-service/

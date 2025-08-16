@@ -10,55 +10,55 @@ authors = [{name = "HealthLink Team"}]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    # Web框架
+    # Web Structure
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
     
-    # 数据库
+    # Database
     "sqlalchemy>=2.0.0",
     "alembic>=1.12.0",
     "pymysql>=1.1.0",
     
-    # 数据验证
+    # Data Transmission
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
     
-    # HTTP客户端
+    # HTTP Client
     "httpx>=0.25.0",
     
-    # 安全
+    # Security
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
     "python-multipart>=0.0.6",
     
-    # 配置
+    # Config
     "pyyaml>=6.0",
     "python-dotenv>=1.0.0",
     
-    # 日志和监控
+    # Log
     "structlog>=23.2.0",
     "prometheus-client>=0.19.0",
     
-    # 工具
+    # Tools
     "click>=8.1.0",
-    "rich>=13.7.0",
+    "rich>=10.14.0,<14.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    # 代码质量
+    # Format
     "black>=23.11.0",
     "isort>=5.12.0",
     "ruff>=0.1.6",
     "mypy>=1.7.0",
     
-    # 测试
+    # Test
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.1.0",
     "httpx>=0.25.0",
     
-    # 开发工具
+    # Dev
     "pre-commit>=3.5.0",
 ]
 

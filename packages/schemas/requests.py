@@ -177,7 +177,7 @@ class PaginationRequest(BaseModel):
     page: int = Field(1, ge=1, description="页码")
     size: int = Field(20, ge=1, le=100, description="每页大小")
     sort_by: Optional[str] = Field(None, description="排序字段")
-    sort_order: Optional[str] = Field("desc", regex="^(asc|desc)$", description="排序方向")
+    sort_order: Optional[str] = Field("desc", pattern="^(asc|desc)$", description="排序方向")
 
 class PatientQueryRequest(PaginationRequest):
     """患者查询请求"""
