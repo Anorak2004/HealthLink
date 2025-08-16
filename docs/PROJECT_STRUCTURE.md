@@ -1,0 +1,42 @@
+# HealthLink — 项目目录规划（Monorepo）
+
+```
+HealthLink/
+  docs/
+    openapi.yaml
+    ADRs/
+    playbooks/
+  apps/
+    patient-miniapp/
+    doctor-console/
+    admin-ops/
+  services/
+    gateway-api/
+    icer-engine/
+    screening-service/
+    intervention-service/
+    outcomes-service/
+    nlp-service/
+    asr-keywords-service/
+    kg-comorbidity-service/
+    workflow-orchestrator/
+    fl-connector/
+    data-ingest/
+  packages/
+    schemas/
+    clients/
+    policies/
+      icer/
+        2025-08.json
+  infra/
+    docker/
+    k8s/
+    observability/
+  .github/workflows/
+    ci.yml
+  .pre-commit-config.yaml
+  .spectral.yaml
+  pyproject.toml
+  README.md
+  docker-compose.yml
+```
