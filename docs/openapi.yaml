@@ -1,0 +1,450 @@
+openapi: 3.0.3
+info:
+  title: HealthLink API
+  description: AI-driven Comorbidity Management Platform API
+  version: 1.0.0-mvp
+  contact:
+    name: HealthLink Team
+    email: team@healthlink.ai
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+  - url: https://api.healthlink.ai/v1
+    description: Production server
+
+paths:
+  # 患者管理
+  /patients:
+    get:
+      summary: List patients
+      tags: [Patients]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientListResponse'
+    post:
+      summary: Create patient
+      tags: [Patients]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientCreateResponse'
+
+  /patients/{patient_id}:
+    get:
+      summary: Get patient by ID
+      tags: [Patients]
+      parameters:
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientCreateResponse'
+
+  # ICER评估
+  /icer/policies:
+    get:
+      summary: List ICER policy and metadata
+      tags: [ICER]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IcerPolicyResponse'
+
+  /icer/evaluate:
+    post:
+      summary: Evaluate ICER & INB
+      tags: [ICER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IcerEvaluateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IcerEvaluateResult'
+
+components:
+  schemas:
+    # 基础响应模型
+    BaseResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+        success:
+          type: boolean
+          default: true
+
+    ErrorDetail:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        field:
+          type: string
+          nullable: true
+
+    ErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            error:
+              $ref: '#/components/schemas/ErrorDetail'
+            trace_id:
+              type: string
+              nullable: true
+
+    # 患者相关模型
+    PatientCreateRequest:
+      type: object
+      required: [patient_id, name]
+      properties:
+        patient_id:
+          type: string
+          minLength: 1
+          maxLength: 50
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        gender:
+          type: string
+          enum: [M, F, Other]
+        birth_date:
+          type: string
+          format: date
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          maxLength: 100
+
+    PatientResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        patient_id:
+          type: string
+        name:
+          type: string
+        gender:
+          type: string
+          nullable: true
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PatientCreateResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/PatientResponse'
+
+    PatientListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/PatientResponse'
+            meta:
+              $ref: '#/components/schemas/PaginationMeta'
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+        has_next:
+          type: boolean
+        has_prev:
+          type: boolean
+
+    # ICER相关模型
+    IcerArm:
+      type: object
+      required: [cost, effect, effect_unit]
+      properties:
+        cost:
+          type: number
+          minimum: 0
+          description: 成本（元）
+        effect:
+          type: number
+          description: 效果值（QALY或DALY）
+        effect_unit:
+          type: string
+          enum: [QALY, DALY, OTHER]
+          description: 效果单位
+
+    IcerThreshold:
+      type: object
+      required: [value, unit]
+      properties:
+        value:
+          type: number
+          minimum: 0
+          description: 阈值数值
+        unit:
+          type: string
+          enum: [CNY_per_QALY, CNY_per_DALY]
+          description: 阈值单位
+        source:
+          type: string
+          enum: [policy, literature, WTP_survey, config]
+          default: config
+          description: 阈值来源
+
+    IcerDiscount:
+      type: object
+      properties:
+        cost_rate:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.03
+          description: 成本贴现率
+        effect_rate:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.03
+          description: 效果贴现率
+
+    IcerUncertainty:
+      type: object
+      properties:
+        se_cost_0:
+          type: number
+          minimum: 0
+          nullable: true
+          description: 对照组成本标准误
+        se_cost_1:
+          type: number
+          minimum: 0
+          nullable: true
+          description: 干预组成本标准误
+        se_eff_0:
+          type: number
+          minimum: 0
+          nullable: true
+          description: 对照组效果标准误
+        se_eff_1:
+          type: number
+          minimum: 0
+          nullable: true
+          description: 干预组效果标准误
+        corr:
+          type: number
+          minimum: -1
+          maximum: 1
+          nullable: true
+          description: 成本效果相关系数
+        samples:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          default: 0
+          description: 蒙特卡洛抽样次数
+
+    IcerEvaluateRequest:
+      type: object
+      required: [comparator, intervention]
+      properties:
+        comparator:
+          $ref: '#/components/schemas/IcerArm'
+          description: 对照臂
+        intervention:
+          $ref: '#/components/schemas/IcerArm'
+          description: 干预臂
+        perspective:
+          type: string
+          enum: [societal, payer, provider]
+          default: payer
+          description: 分析视角
+        threshold:
+          $ref: '#/components/schemas/IcerThreshold'
+          description: 自定义阈值
+        discount:
+          $ref: '#/components/schemas/IcerDiscount'
+          description: 贴现率配置
+        uncertainty:
+          $ref: '#/components/schemas/IcerUncertainty'
+          description: 不确定性分析参数
+        equity_weights:
+          type: object
+          additionalProperties:
+            type: number
+          description: 公平性权重
+
+    IcerEvaluateResult:
+      type: object
+      properties:
+        icer_value:
+          type: number
+          nullable: true
+          description: ICER值
+        icer_unit:
+          type: string
+          nullable: true
+          description: ICER单位
+        dominance:
+          type: string
+          enum: [simple, extended, none]
+          description: 支配关系
+        decision:
+          type: string
+          enum: [accept, reject, inconclusive]
+          description: 决策结果
+        net_benefit:
+          type: number
+          nullable: true
+          description: 净效益
+        ceac_prob_accept:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 1
+          description: 成本效果可接受曲线概率
+        policy_version:
+          type: string
+          nullable: true
+          description: 使用的策略版本
+        threshold_used:
+          type: number
+          nullable: true
+          description: 使用的阈值
+        assumptions:
+          type: object
+          description: 假设条件
+        evaluated_at:
+          type: string
+          format: date-time
+          description: 评估时间
+
+    IcerPolicyResponse:
+      type: object
+      properties:
+        version:
+          type: string
+          description: 策略版本
+        threshold:
+          type: number
+          description: 默认阈值
+        cohorts:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              threshold:
+                type: number
+          description: 人群特定阈值
+        updated_at:
+          type: string
+          format: date-time
+          description: 更新时间
+        notes:
+          type: string
+          description: 备注说明
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Patients
+    description: 患者管理
+  - name: ICER
+    description: ICER评估
+  - name: Screenings
+    description: 筛查管理
+  - name: Interventions
+    description: 干预管理
+  - name: Outcomes
+    description: 效果追踪

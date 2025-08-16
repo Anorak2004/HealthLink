@@ -11,12 +11,25 @@ services:
     environment:
       - DEBUG=true
       - LOG_LEVEL=INFO
+      - ICER_ENGINE_URL=http://icer_engine:8090
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
       - ./config:/app/config
     depends_on:
       - mysql
+      - icer_engine
+    networks:
+      - healthlink
+
+  # ICER Engine Service
+  icer_engine:
+    build:
+      context: ./services/icer_engine
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./packages/policies:/app/../packages/policies:ro
     networks:
       - healthlink
 

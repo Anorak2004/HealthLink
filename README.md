@@ -34,9 +34,26 @@ pip install -r requirements.txt
 python test_fix.py
 ```
 
-4. **启动服务** (自动初始化数据库和示例数据)
+4. **启动完整系统**
 ```bash
-python start_server.py
+# 方式1: 使用Docker Compose (推荐)
+docker-compose up -d
+
+# 方式2: 分别启动服务
+python start_server.py        # Gateway API (端口8000)
+python start_icer_engine.py   # ICER Engine (端口8090)
+```
+
+5. **验证服务**
+```bash
+# 测试Gateway API
+curl http://localhost:8000/health
+
+# 测试ICER Engine
+curl http://localhost:8090/health
+
+# 运行集成测试
+python test_icer_integration.py
 ```
 
 ### 传统安装步骤
@@ -131,6 +148,7 @@ curl -X POST "http://localhost:8000/api/v1/patients" \
 
 #### 执行ICER评估
 ```bash
+# 通过Gateway API
 curl -X POST "http://localhost:8000/api/v1/icer/evaluate" \
   -H "Content-Type: application/json" \
   -d '{
@@ -138,6 +156,22 @@ curl -X POST "http://localhost:8000/api/v1/icer/evaluate" \
     "intervention_effectiveness": 0.2,
     "population_size": 100,
     "time_horizon": 5
+  }'
+
+# 直接调用ICER Engine
+curl -X POST "http://localhost:8090/v1/icer/evaluate" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "comparator": {
+      "cost": 10000,
+      "effect": 0.8,
+      "effect_unit": "QALY"
+    },
+    "intervention": {
+      "cost": 12000,
+      "effect": 1.1,
+      "effect_unit": "QALY"
+    }
   }'
 ```
 
@@ -228,10 +262,12 @@ HealthLink/
 
 ## MVP功能特性
 
-### ✅ 已实现 (M1)
+### ✅ 已实现 (M1 + M2)
 - [x] 统一API网关和路由
 - [x] 患者管理CRUD
-- [x] ICER策略管理和评估
+- [x] 独立ICER Engine微服务
+- [x] ICER/INB评估与策略管理
+- [x] 支配性分析和不确定性分析
 - [x] 数据库抽象层 (SQLite/MySQL切换)
 - [x] AI模型抽象层 (API/本地切换)
 - [x] 统一错误处理和日志
@@ -239,7 +275,7 @@ HealthLink/
 - [x] 健康检查和监控端点
 - [x] Docker容器化部署
 
-### 🚧 开发中 (M2-M5)
+### 🚧 开发中 (M3-M5)
 - [ ] 筛查服务 (NLP/ASR集成)
 - [ ] 干预决策服务
 - [ ] 效果追踪服务

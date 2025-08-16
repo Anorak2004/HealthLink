@@ -1,1 +1,0 @@
-# HealthLink Gateway API Service

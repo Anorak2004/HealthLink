@@ -16,7 +16,18 @@ HealthLink/
   services/
     gateway_api/             # API网关服务 (重命名为Python兼容)
     gateway-api/             # 原始目录 (可删除)
-    icer-engine/
+    icer_engine/             # ICER评估微服务 ✅ M2完成
+      app/
+        main.py              # FastAPI应用
+        routers/
+          evaluate.py        # ICER评估路由
+        schemas/
+          icer.py            # ICER数据模型
+      tests/
+        test_icer_engine.py  # 单元测试
+      Dockerfile             # Docker镜像
+      requirements.txt       # 依赖文件
+      README.md              # 服务文档
     screening-service/
     intervention-service/
     outcomes-service/
@@ -55,4 +66,12 @@ HealthLink/
   pyproject.toml
   README.md
   docker-compose.yml
+  
+  # 启动和测试脚本
+  start_server.py          # Gateway API启动脚本
+  start_icer_engine.py     # ICER Engine启动脚本
+  start_all_services.py    # 完整系统启动脚本
+  test_icer_integration.py # ICER Engine集成测试
+  quality_check.py         # 质量检查脚本
+  quick_test.py            # 快速测试脚本
 ```

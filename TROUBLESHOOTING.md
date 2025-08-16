@@ -140,15 +140,79 @@ python quick_test.py
 3. **日志配置**: 调整日志级别和输出路径
 4. **监控配置**: 启用Prometheus指标收集
 
+## ICER Engine 相关问题
+
+### 6. ICER Engine启动失败
+
+**错误信息**: `ModuleNotFoundError: No module named 'app'`
+
+**解决方案**:
+```bash
+# 确保在正确目录启动
+cd services/icer_engine
+python -m uvicorn app.main:app --port 8090
+
+# 或使用启动脚本
+python start_icer_engine.py
+```
+
+### 7. 策略文件未找到
+
+**错误信息**: `ICER policy file not found`
+
+**解决方案**:
+```bash
+# 检查策略文件是否存在
+ls -la packages/policies/icer/2025-08.json
+
+# 如果不存在，创建策略文件
+mkdir -p packages/policies/icer
+# 复制示例策略文件或重新运行初始化
+```
+
+### 8. ICER评估计算错误
+
+**错误信息**: 评估结果不符合预期
+
+**解决方案**:
+- 检查输入数据的单位是否一致
+- 确认成本和效果值为正数
+- 验证阈值设置是否正确
+- 查看响应中的assumptions字段了解计算假设
+
+### 9. Docker服务间通信失败
+
+**错误信息**: `Connection refused` 或 `Service unavailable`
+
+**解决方案**:
+```bash
+# 检查Docker网络
+docker network ls
+docker network inspect healthlink_healthlink
+
+# 重启Docker Compose
+docker-compose down
+docker-compose up -d
+
+# 检查服务状态
+docker-compose ps
+```
+
 ## 获取帮助
 
 如果问题仍未解决：
 
 1. 检查 `logs/healthlink.log` 文件中的详细错误信息
-2. 运行 `python quick_test.py` 获取诊断信息
-3. 查看项目文档和API文档 (http://localhost:8000/docs)
+2. 运行诊断脚本：
+   - `python quick_test.py` - 快速诊断
+   - `python test_icer_integration.py` - ICER Engine集成测试
+   - `python test_m2_acceptance.py` - M2验收测试
+3. 查看项目文档和API文档：
+   - Gateway API: http://localhost:8000/docs
+   - ICER Engine: http://localhost:8090/docs
 4. 提交Issue时请包含：
    - Python版本
    - 操作系统
    - 完整的错误堆栈
    - `pip list` 输出
+   - 相关服务的日志输出
