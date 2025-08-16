@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # HealthLink Gateway API
+  gateway-api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+    depends_on:
+      - mysql
+    networks:
+      - healthlink
+
+  # MySQL数据库 (可选，用于生产环境)
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: healthlink_root
+      MYSQL_DATABASE: healthlink
+      MYSQL_USER: healthlink_user
+      MYSQL_PASSWORD: healthlink_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - healthlink
+    profiles:
+      - mysql
+
+  # Redis缓存 (可选，用于生产环境)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - healthlink
+    profiles:
+      - redis
+
+  # Prometheus监控 (可选)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - healthlink
+    profiles:
+      - monitoring
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  healthlink:
+    driver: bridge

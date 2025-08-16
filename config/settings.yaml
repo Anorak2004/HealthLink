@@ -1,0 +1,126 @@
+# HealthLink MVP Configuration
+# 版本: v1.0-mvp
+
+# 数据库配置 (SQLite -> MySQL 可切换)
+database:
+  type: "sqlite"  # sqlite | mysql | postgresql
+  sqlite:
+    path: "data/healthlink.db"
+    echo: false
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "healthlink"
+    username: "${MYSQL_USER}"
+    password: "${MYSQL_PASSWORD}"
+    pool_size: 10
+    max_overflow: 20
+
+# AI模型配置 (API调用 -> 本地模型 可切换)
+ai_models:
+  # NLP服务配置
+  nlp:
+    provider: "api"  # api | local | huggingface
+    api:
+      endpoint: "${NLP_API_ENDPOINT}"
+      api_key: "${NLP_API_KEY}"
+      timeout: 30
+    local:
+      model_path: "models/nlp/clinical-bert"
+      device: "cpu"  # cpu | cuda
+    fallback_enabled: true
+  
+  # ASR服务配置  
+  asr:
+    provider: "api"  # api | local | whisper
+    api:
+      endpoint: "${ASR_API_ENDPOINT}"
+      api_key: "${ASR_API_KEY}"
+      timeout: 60
+    local:
+      model_path: "models/asr/whisper-base"
+      device: "cpu"
+    keywords_whitelist: "config/asr_keywords.json"
+
+# ICER策略配置
+icer:
+  default_threshold: 37446  # 元/DALY
+  policy_path: "packages/policies/icer/"
+  update_interval: 3600  # 秒，策略热更新间隔
+
+# API网关配置
+gateway:
+  host: "0.0.0.0"
+  port: 8000
+  cors_origins: ["http://localhost:3000", "http://localhost:8080"]
+  rate_limit:
+    requests_per_minute: 100
+    burst: 20
+
+# 安全配置
+security:
+  jwt:
+    secret_key: "${JWT_SECRET_KEY}"
+    algorithm: "HS256"
+    expire_minutes: 1440  # 24小时
+  encryption:
+    key: "${ENCRYPTION_KEY}"
+
+# 日志配置
+logging:
+  level: "INFO"  # DEBUG | INFO | WARNING | ERROR
+  format: "json"  # json | text
+  file: "logs/healthlink.log"
+  max_size: "100MB"
+  backup_count: 5
+
+# 缓存配置 (MVP暂时内存缓存)
+cache:
+  type: "memory"  # memory | redis
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: "${REDIS_PASSWORD}"
+  ttl: 3600  # 默认过期时间(秒)
+
+# 外部服务配置
+external_services:
+  # 消息队列 (MVP暂时关闭)
+  message_queue:
+    enabled: false
+    type: "memory"  # memory | rabbitmq | kafka
+  
+  # 监控配置
+  monitoring:
+    prometheus_enabled: true
+    metrics_port: 9090
+    health_check_interval: 30
+
+# 业务配置
+business:
+  # 筛查配置
+  screening:
+    triage_thresholds:
+      low: 0.3
+      medium: 0.6
+      high: 0.8
+    batch_size: 100
+  
+  # 干预配置  
+  intervention:
+    auto_approve_threshold: 0.9
+    manual_review_required: true
+    max_interventions_per_patient: 5
+  
+  # 追踪配置
+  outcomes:
+    followup_intervals: [7, 30, 90, 180]  # 天
+    metrics_retention_days: 365
+
+# 开发配置
+development:
+  debug: true
+  auto_reload: true
+  mock_external_apis: false
+  test_data_enabled: true
