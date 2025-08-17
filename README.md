@@ -306,7 +306,7 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 ## 联系方式
 
 - 项目维护者: HealthLink Team
-- 邮箱: team@healthlink.ai
+- 邮箱: HealthLink@anorakovo.site
 - 文档: [项目Wiki](docs/)
 
 ---
